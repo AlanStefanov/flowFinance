@@ -1,6 +1,6 @@
 import { Telegraf } from "telegraf";
 import { PrismaClient, TransactionType, Source } from "@prisma/client";
-import * as dotenv from "dotenv";
+import dotenv from "dotenv";
 
 dotenv.config();
 
