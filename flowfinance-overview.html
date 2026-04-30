@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlowFinance — Project Overview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0f0e;
+    --surface: #161918;
+    --surface2: #1e2220;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #e8ebe9;
+    --muted: #7a8480;
+    --dim: #4a5450;
+    --accent: #4ef07c;
+    --accent2: #a8f0bc;
+    --accent-dim: rgba(78,240,124,0.1);
+    --accent-dim2: rgba(78,240,124,0.05);
+    --warn: #f0b84e;
+    --info: #4eb8f0;
+    --danger: #f07a4e;
+    --mono: 'DM Mono', monospace;
+    --serif: 'Fraunces', serif;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── NOISE TEXTURE ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.025;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── LAYOUT ── */
+  .wrapper { max-width: 960px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 1; }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 80px 0 64px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .hero-tag::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-size: clamp(52px, 8vw, 80px);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .hero-sub {
+    font-size: 16px;
+    color: var(--muted);
+    max-width: 480px;
+    margin-top: 20px;
+    line-height: 1.7;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 20px;
+    margin-top: 36px;
+    flex-wrap: wrap;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 100px;
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    background: var(--surface);
+  }
+
+  .pill.green { border-color: rgba(78,240,124,0.3); color: var(--accent2); background: var(--accent-dim2); }
+  .pill.yellow { border-color: rgba(240,184,78,0.3); color: var(--warn); background: rgba(240,184,78,0.05); }
+  .pill.blue { border-color: rgba(78,184,240,0.3); color: var(--info); background: rgba(78,184,240,0.05); }
+
+  /* ── SECTIONS ── */
+  section { padding: 64px 0; border-bottom: 1px solid var(--border); }
+  section:last-child { border-bottom: none; }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 300;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+    margin-bottom: 12px;
+  }
+
+  h2 em { font-style: italic; color: var(--accent); }
+
+  .section-intro {
+    color: var(--muted);
+    max-width: 560px;
+    margin-bottom: 40px;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* ── ARCHITECTURE ── */
+  .arch-cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  @media (max-width: 720px) { .arch-cols { grid-template-columns: 1fr; } }
+
+  .arch-col-head {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+  }
+
+  .arch-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color .2s, background .2s;
+  }
+
+  .arch-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+  }
+
+  .arch-card.g::before { background: var(--accent); }
+  .arch-card.b::before { background: var(--info); }
+  .arch-card.y::before { background: var(--warn); }
+  .arch-card.r::before { background: var(--danger); }
+
+  .arch-card:hover { border-color: var(--border2); background: var(--surface2); }
+
+  .arch-card .name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .arch-card .tech { font-family: var(--mono); font-size: 10px; color: var(--dim); margin-top: 3px; }
+
+  /* ── USER JOURNEY ── */
+  .journey { position: relative; padding-left: 0; }
+
+  .journey-step {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 0 20px;
+    margin-bottom: 0;
+  }
+
+  .journey-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .step-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .step-line {
+    width: 1px;
+    flex: 1;
+    background: var(--border);
+    margin: 4px 0;
+    min-height: 24px;
+  }
+
+  .journey-step:last-child .step-line { display: none; }
+
+  .journey-right {
+    padding-bottom: 32px;
+  }
+
+  .step-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 6px;
+    padding-top: 6px;
+  }
+
+  .step-desc {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  .step-tags { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    border: 1px solid;
+  }
+
+  .tag-tg { border-color: rgba(78,184,240,0.4); color: var(--info); background: rgba(78,184,240,0.07); }
+  .tag-web { border-color: rgba(78,240,124,0.4); color: var(--accent2); background: rgba(78,240,124,0.07); }
+  .tag-both { border-color: rgba(240,184,78,0.4); color: var(--warn); background: rgba(240,184,78,0.07); }
+
+  /* ── DATABASE ── */
+  .db-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  @media (max-width: 600px) { .db-grid { grid-template-columns: 1fr; } }
+
+  .db-table {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .db-head {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface2);
+  }
+
+  .db-head-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent2);
+    font-weight: 500;
+  }
+
+  .db-badge {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 100px;
+    border: 1px solid rgba(78,240,124,0.3);
+    color: var(--accent);
+    background: var(--accent-dim2);
+  }
+
+  .db-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 16px;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+
+  .db-row:last-child { border-bottom: none; }
+
+  .db-field {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  .db-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .db-type {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--dim);
+  }
+
+  .db-pk {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: rgba(240,184,78,0.15);
+    color: var(--warn);
+    border: 1px solid rgba(240,184,78,0.3);
+  }
+
+  .db-fk {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: rgba(78,184,240,0.12);
+    color: var(--info);
+    border: 1px solid rgba(78,184,240,0.3);
+  }
+
+  .db-note {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--dim);
+    margin-top: 16px;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .db-note::before {
+    content: '//';
+    color: var(--accent);
+  }
+
+  /* ── ROADMAP ── */
+  .roadmap { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  @media (max-width: 600px) { .roadmap { grid-template-columns: 1fr; } }
+
+  .phase-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .phase-card::after {
+    content: attr(data-phase);
+    position: absolute;
+    top: -10px;
+    right: -4px;
+    font-family: var(--serif);
+    font-size: 90px;
+    font-weight: 600;
+    opacity: 0.04;
+    color: var(--text);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .phase-tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 100px;
+    border: 1px solid;
+    display: inline-block;
+    margin-bottom: 12px;
+  }
+
+  .phase-1 .phase-tag { border-color: rgba(78,184,240,0.4); color: var(--info); background: rgba(78,184,240,0.07); }
+  .phase-2 .phase-tag { border-color: rgba(78,240,124,0.4); color: var(--accent2); background: rgba(78,240,124,0.07); }
+  .phase-3 .phase-tag { border-color: rgba(240,184,78,0.4); color: var(--warn); background: rgba(240,184,78,0.07); }
+  .phase-4 .phase-tag { border-color: rgba(240,122,78,0.4); color: var(--danger); background: rgba(240,122,78,0.07); }
+
+  .phase-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .phase-weeks { font-family: var(--mono); font-size: 10px; color: var(--dim); margin-bottom: 16px; }
+
+  .task-list { display: flex; flex-direction: column; gap: 7px; }
+
+  .task {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  .task::before {
+    content: '—';
+    color: var(--dim);
+    flex-shrink: 0;
+    font-family: var(--mono);
+    font-size: 11px;
+    margin-top: 1px;
+  }
+
+  /* ── STACK ── */
+  .stack-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+  @media (max-width: 720px) { .stack-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 420px) { .stack-grid { grid-template-columns: 1fr; } }
+
+  .stack-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    transition: border-color .2s;
+  }
+
+  .stack-card:hover { border-color: var(--border2); }
+
+  .stack-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    border: 1px solid var(--border2);
+    color: var(--muted);
+  }
+
+  .stack-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+  .stack-role { font-size: 11px; color: var(--dim); line-height: 1.4; }
+
+  /* ── BOT MESSAGES ── */
+  .bot-demo {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    max-width: 400px;
+  }
+
+  .bot-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface2);
+  }
+
+  .bot-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--accent-dim);
+    border: 1px solid rgba(78,240,124,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+
+  .bot-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .bot-status { font-size: 10px; color: var(--accent); font-family: var(--mono); }
+
+  .bot-messages { padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+
+  .msg {
+    max-width: 82%;
+    padding: 9px 13px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .msg-user {
+    align-self: flex-end;
+    background: rgba(78,240,124,0.12);
+    border: 1px solid rgba(78,240,124,0.2);
+    color: var(--accent2);
+    border-radius: 12px 12px 3px 12px;
+  }
+
+  .msg-bot {
+    align-self: flex-start;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 12px 12px 12px 3px;
+  }
+
+  .msg-time {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--dim);
+    margin-top: 3px;
+  }
+
+  .bot-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+
+  @media (max-width: 600px) { .bot-row { grid-template-columns: 1fr; } }
+
+  .bot-commands {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .command-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+
+  .command-input {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent2);
+    margin-bottom: 3px;
+  }
+
+  .command-desc {
+    font-size: 12px;
+    color: var(--dim);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 48px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: gap;
+    gap: 16px;
+  }
+
+  .footer-brand {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 300;
+    color: var(--muted);
+  }
+
+  .footer-brand em { font-style: italic; color: var(--accent); }
+
+  .footer-author {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--dim);
+    text-align: right;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero > * {
+    opacity: 0;
+    animation: fadeUp .6s ease forwards;
+  }
+
+  .hero .hero-tag { animation-delay: 0s; }
+  .hero h1 { animation-delay: .1s; }
+  .hero .hero-sub { animation-delay: .2s; }
+  .hero .hero-meta { animation-delay: .3s; }
+
+  /* ── DIVIDERS ── */
+  .content-split { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+  @media (max-width: 640px) { .content-split { grid-template-columns: 1fr; } }
+
+  /* ── HIGHLIGHTS ── */
+  .highlight-box {
+    background: var(--accent-dim2);
+    border: 1px solid rgba(78,240,124,0.15);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 24px;
+  }
+
+  .highlight-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .highlight-list { display: flex; flex-direction: column; gap: 6px; }
+
+  .highlight-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .highlight-item::before {
+    content: '↳';
+    color: var(--accent);
+    flex-shrink: 0;
+    font-family: var(--mono);
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-tag">Proyecto Open Source · SaaS</div>
+    <h1>Flow<em>Finance</em></h1>
+    <p class="hero-sub">Plataforma personal de finanzas que combina un bot de Telegram para carga rápida con un dashboard web para análisis profundo. Multi-tenant, open source y deployado en AWS.</p>
+    <div class="hero-meta">
+      <span class="pill green">Open Source</span>
+      <span class="pill green">SaaS Gratuito</span>
+      <span class="pill blue">TypeScript</span>
+      <span class="pill blue">Next.js 14</span>
+      <span class="pill yellow">AWS Aurora</span>
+    </div>
+  </header>
+
+  <!-- ARQUITECTURA -->
+  <section>
+    <div class="section-label">01 — Arquitectura del sistema</div>
+    <h2>Cómo está <em>construido</em></h2>
+    <p class="section-intro">Tres capas bien separadas: entrada de datos (Telegram + Web), lógica de negocio (API Routes + Auth), e infraestructura cloud (AWS Aurora).</p>
+
+    <div class="arch-cols">
+      <div>
+        <div class="arch-col-head">Entrada de datos</div>
+        <div class="arch-card g">
+          <div class="name">Bot de Telegram</div>
+          <div class="tech">Telegraf.js · NLP básico · Webhooks</div>
+        </div>
+        <div class="arch-card g">
+          <div class="name">Web Dashboard</div>
+          <div class="tech">Next.js 14 App Router · SSR</div>
+        </div>
+        <div class="arch-card y">
+          <div class="name">Flujo de Linking</div>
+          <div class="tech">Código 6 dígitos · 15 min TTL</div>
+        </div>
+      </div>
+      <div>
+        <div class="arch-col-head">Backend / Lógica</div>
+        <div class="arch-card b">
+          <div class="name">API Routes</div>
+          <div class="tech">Next.js · REST · TypeScript</div>
+        </div>
+        <div class="arch-card b">
+          <div class="name">Auth · Clerk</div>
+          <div class="tech">Google OAuth · JWT · Roles</div>
+        </div>
+        <div class="arch-card y">
+          <div class="name">Parser NLP</div>
+          <div class="tech">Regex · heurísticas · categorías</div>
+        </div>
+        <div class="arch-card r">
+          <div class="name">Admin Panel</div>
+          <div class="tech">Rol ADMIN exclusivo · métricas</div>
+        </div>
+      </div>
+      <div>
+        <div class="arch-col-head">Infraestructura</div>
+        <div class="arch-card y">
+          <div class="name">AWS Aurora MySQL</div>
+          <div class="tech">Multi-tenant · aislamiento por user_id</div>
+        </div>
+        <div class="arch-card b">
+          <div class="name">Vercel / EC2</div>
+          <div class="tech">Next.js hosting · CI/CD</div>
+        </div>
+        <div class="arch-card g">
+          <div class="name">Telegram Webhook</div>
+          <div class="tech">HTTPS · token secreto</div>
+        </div>
+        <div class="arch-card r">
+          <div class="name">GitHub Actions</div>
+          <div class="tech">Deploy automático · tests</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPERIENCIA DE USUARIO -->
+  <section>
+    <div class="section-label">02 — Experiencia de usuario</div>
+    <div class="content-split">
+      <div>
+        <h2>Cómo lo <em>vive</em> el usuario</h2>
+        <p class="section-intro">El flujo está diseñado para que el mayor esfuerzo sea el registro, y que ese registro sea casi tan rápido como escribir un mensaje.</p>
+
+        <div class="journey">
+          <div class="journey-step">
+            <div class="journey-left">
+              <div class="step-circle">01</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="journey-right">
+              <div class="step-title">Descubre FlowFinance</div>
+              <div class="step-desc">Llega a la landing page, ve la demo del bot en vivo y el pitch open source. Un botón: "Empezar gratis".</div>
+              <div class="step-tags"><span class="tag tag-web">Web</span></div>
+            </div>
+          </div>
+          <div class="journey-step">
+            <div class="journey-left">
+              <div class="step-circle">02</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="journey-right">
+              <div class="step-title">Registro con Google</div>
+              <div class="step-desc">Un clic con Clerk. Sin formularios. Cuenta creada con rol CONSUMER. Onboarding de 3 pasos guiado.</div>
+              <div class="step-tags"><span class="tag tag-web">Web</span></div>
+            </div>
+          </div>
+          <div class="journey-step">
+            <div class="journey-left">
+              <div class="step-circle">03</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="journey-right">
+              <div class="step-title">Conecta Telegram</div>
+              <div class="step-desc">Configuración → "Conectar Telegram" genera un código de 6 dígitos. Envía /start XXXXXX al bot. Vinculación instantánea.</div>
+              <div class="step-tags"><span class="tag tag-both">Web + Telegram</span></div>
+            </div>
+          </div>
+          <div class="journey-step">
+            <div class="journey-left">
+              <div class="step-circle">04</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="journey-right">
+              <div class="step-title">Registra gastos al instante</div>
+              <div class="step-desc">Desde cualquier lugar escribe en lenguaje natural. El bot parsea, confirma y guarda. Confirmación en segundos.</div>
+              <div class="step-tags"><span class="tag tag-tg">Telegram</span></div>
+            </div>
+          </div>
+          <div class="journey-step">
+            <div class="journey-left">
+              <div class="step-circle">05</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="journey-right">
+              <div class="step-title">Analiza en el dashboard</div>
+              <div class="step-desc">Gráficos de torta por categoría, barras por mes, balance general. CRUD completo, exportar a CSV.</div>
+              <div class="step-tags"><span class="tag tag-web">Web</span></div>
+            </div>
+          </div>
+          <div class="journey-step">
+            <div class="journey-left">
+              <div class="step-circle">06</div>
+              <div class="step-line"></div>
+            </div>
+            <div class="journey-right">
+              <div class="step-title">Consultas rápidas en Telegram</div>
+              <div class="step-desc">Pregunta "¿cuánto gasté este mes?" o "¿cuánto me queda?" y el bot responde en segundos, sin abrir el navegador.</div>
+              <div class="step-tags"><span class="tag tag-tg">Telegram</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div style="margin-bottom:20px">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px">Conversación real con el bot</div>
+          <div class="bot-demo">
+            <div class="bot-header">
+              <div class="bot-avatar">💸</div>
+              <div>
+                <div class="bot-name">FlowFinance Bot</div>
+                <div class="bot-status">● en línea</div>
+              </div>
+            </div>
+            <div class="bot-messages">
+              <div>
+                <div class="msg msg-user">Gaste 4500 en el super</div>
+                <div class="msg-time" style="text-align:right">14:32</div>
+              </div>
+              <div>
+                <div class="msg msg-bot">✅ Registrado<br><br><strong>$4.500</strong> · Supermercado<br>Hoy 14:32 · desde Telegram<br><br>¿Correcto? (si / no / editar)</div>
+                <div class="msg-time">14:32</div>
+              </div>
+              <div>
+                <div class="msg msg-user">si</div>
+                <div class="msg-time" style="text-align:right">14:32</div>
+              </div>
+              <div>
+                <div class="msg msg-user">cuanto gaste este mes?</div>
+                <div class="msg-time" style="text-align:right">14:33</div>
+              </div>
+              <div>
+                <div class="msg msg-bot">📊 <strong>Noviembre 2024</strong><br><br>Total gastos: $187.400<br>Supermercado: $62.000<br>Servicios: $45.000<br>Transporte: $28.000<br>Otros: $52.400<br><br>Promedio diario: $8.520</div>
+                <div class="msg-time">14:33</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px">Comandos disponibles</div>
+          <div class="bot-commands">
+            <div class="command-card">
+              <div class="command-input">"Gaste X en Y"</div>
+              <div class="command-desc">Registra un gasto con categoría automática</div>
+            </div>
+            <div class="command-card">
+              <div class="command-input">"Cobré X"</div>
+              <div class="command-desc">Registra un ingreso</div>
+            </div>
+            <div class="command-card">
+              <div class="command-input">"¿Cuánto gasté este mes?"</div>
+              <div class="command-desc">Resumen mensual por categorías</div>
+            </div>
+            <div class="command-card">
+              <div class="command-input">"¿Cuánto me queda?"</div>
+              <div class="command-desc">Balance del período actual</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BASE DE DATOS -->
+  <section>
+    <div class="section-label">03 — Base de datos</div>
+    <h2>Esquema <em>MySQL</em> · AWS Aurora</h2>
+    <p class="section-intro">Diseñado para multi-tenancy desde el día uno. Todas las queries filtran por user_id. Aislamiento total entre usuarios.</p>
+
+    <div class="db-grid">
+      <div class="db-table">
+        <div class="db-head">
+          <span class="db-head-name">users</span>
+          <span class="db-badge">principal</span>
+        </div>
+        <div class="db-row">
+          <span class="db-field">id</span>
+          <div class="db-right"><span class="db-pk">PK</span><span class="db-type">VARCHAR(255)</span></div>
+        </div>
+        <div class="db-row">
+          <span class="db-field">email</span>
+          <div class="db-right"><span class="db-type">VARCHAR(255)</span></div>
+        </div>
+        <div class="db-row">
+          <span class="db-field">telegram_id</span>
+          <div class="db-right"><span class="db-type">BIGINT NULL</span></div>
+        </div>
+        <div class="db-row">
+          <span class="db-field">role</span>
+          <div class="db-right"><span class="db-type">ENUM(ADMIN,USER)</span></div>
+        </div>
+        <div class="db-row">
+          <span class="db-field">created_at</span>
+          <div class="db-right"><span class="db-type">DATETIME</span></div>
+        </div>
+      </div>
+
+      <div class="db-table">
+        <div class="db-head">
+          <span class="db-head-name">transactions</span>
+          <span class="db-badge">core</span>
+        </div>
+        <div class="db-row">
+          <span class="db-field">id</span>
+          <div class="db-right"><span class="db-pk">PK</span><span class="db-type">BIGINT</span></div>
+        </div>
+        <div class="db-row">
+          <span class="db-field">user_id</span>
+          <div class="db-right"><span class="db-fk">FK</span><span class="db-type">VARCHAR(255)</span></div>
+        </div>
+        <div class="db-row">
+          <span class="db-field">amount</span>
+          <div class="db-right"><span class="db-type">DECIMAL(12,2)</span></div>
+        </div>
+        <div class="db-row">
+          <span class="db-field">type</span>
+          <div class="db-right"><span class="db-type">ENUM(INCOME,EXPENSE)</span></div>
+        </div>
+        <div class="db-row">
+          <span class="db-field">category</span>
+          <div class="db-right"><span class="db-type">VARCHAR(100)</span></div>
+        </div>
+        <div class="db-row">
+          <span class="db-field">description</span>
+          <div class="db-right"><span class="db-type">TEXT NULL</span></div>
+        </div>
+        <div class="db-row">
+          <span class="db-field">date</span>
+          <div class="db-right"><span class="db-type">DATE</span></div>
+        </div>
+        <div class="db-row">
+          <span class="db-field">source</span>
+          <div class="db-right"><span class="db-type">ENUM(WEB,TELEGRAM)</span></div>
+        </div>
+      </div>
+
+      <div class="db-table">
+        <div class="db-head">
+          <span class="db-head-name">telegram_links</span>
+        </div>
+        <div class="db-row">
+          <span class="db-field">id</span>
+          <div class="db-right"><span class="db-pk">PK</span><span class="db-type">INT</span></div>
+        </div>
+        <div class="db-row">
+          <span class="db-field">user_id</span>
+          <div class="db-right"><span class="db-fk">FK</span><span class="db-type">VARCHAR(255)</span></div>
+        </div>
+        <div class="db-row">
+          <span class="db-field">pairing_code</span>
+          <div class="db-right"><span class="db-type">CHAR(6)</span></div>
+        </div>
+        <div class="db-row">
+          <span class="db-field">is_active</span>
+          <div class="db-right"><span class="db-type">BOOLEAN</span></div>
+        </div>
+        <div class="db-row">
+          <span class="db-field">expires_at</span>
+          <div class="db-right"><span class="db-type">DATETIME</span></div>
+        </div>
+      </div>
+
+      <div class="db-table">
+        <div class="db-head">
+          <span class="db-head-name">categories</span>
+        </div>
+        <div class="db-row">
+          <span class="db-field">id</span>
+          <div class="db-right"><span class="db-pk">PK</span><span class="db-type">INT</span></div>
+        </div>
+        <div class="db-row">
+          <span class="db-field">user_id</span>
+          <div class="db-right"><span class="db-fk">FK</span><span class="db-type">VARCHAR(255)</span></div>
+        </div>
+        <div class="db-row">
+          <span class="db-field">name</span>
+          <div class="db-right"><span class="db-type">VARCHAR(100)</span></div>
+        </div>
+        <div class="db-row">
+          <span class="db-field">color</span>
+          <div class="db-right"><span class="db-type">CHAR(7)</span></div>
+        </div>
+        <div class="db-row">
+          <span class="db-field">icon</span>
+          <div class="db-right"><span class="db-type">VARCHAR(50) NULL</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="db-note">
+      Todas las queries deben filtrar por user_id — aislamiento multi-tenant garantizado. El campo source en transactions permite analítica de adopción (Web vs Telegram).
+    </div>
+  </section>
+
+  <!-- ROADMAP -->
+  <section>
+    <div class="section-label">04 — Plan de desarrollo</div>
+    <h2>Road<em>map</em> · MVP a escala</h2>
+    <p class="section-intro">Cuatro fases progresivas. La Fase 1 entrega valor real; las siguientes construyen sobre una base sólida.</p>
+
+    <div class="roadmap">
+      <div class="phase-card phase-1" data-phase="1">
+        <span class="phase-tag">Fase 1 · MVP</span>
+        <div class="phase-title">Fundamentos</div>
+        <div class="phase-weeks">Semanas 1 – 3</div>
+        <div class="task-list">
+          <div class="task">Setup Next.js + Tailwind + Clerk</div>
+          <div class="task">Conexión Aurora MySQL + migraciones con Prisma</div>
+          <div class="task">CRUD de transacciones desde web</div>
+          <div class="task">Bot Telegram básico (registrar gasto)</div>
+          <div class="task">Flujo de linking Telegram ↔ Web</div>
+          <div class="task">Dashboard con tabla de movimientos</div>
+        </div>
+      </div>
+
+      <div class="phase-card phase-2" data-phase="2">
+        <span class="phase-tag">Fase 2 · Análisis</span>
+        <div class="phase-title">Inteligencia</div>
+        <div class="phase-weeks">Semanas 4 – 6</div>
+        <div class="task-list">
+          <div class="task">Gráficos Recharts (torta + barras mensuales)</div>
+          <div class="task">Resúmenes mensuales por Telegram</div>
+          <div class="task">Categorías customizables por usuario</div>
+          <div class="task">Exportar CSV de movimientos</div>
+          <div class="task">Parser NLP mejorado para el bot</div>
+          <div class="task">Recordatorios configurables</div>
+        </div>
+      </div>
+
+      <div class="phase-card phase-3" data-phase="3">
+        <span class="phase-tag">Fase 3 · SaaS</span>
+        <div class="phase-title">Producto público</div>
+        <div class="phase-weeks">Semanas 7 – 9</div>
+        <div class="task-list">
+          <div class="task">Landing page profesional con demo live</div>
+          <div class="task">Admin panel (métricas globales del SaaS)</div>
+          <div class="task">Onboarding de 3 pasos</div>
+          <div class="task">Deploy en AWS con dominio propio</div>
+          <div class="task">README y docs para open source</div>
+          <div class="task">CI/CD con GitHub Actions</div>
+        </div>
+      </div>
+
+      <div class="phase-card phase-4" data-phase="4">
+        <span class="phase-tag">Fase 4 · Escala</span>
+        <div class="phase-title">Crecimiento</div>
+        <div class="phase-weeks">Semanas 10+</div>
+        <div class="task-list">
+          <div class="task">PWA instalable en móvil</div>
+          <div class="task">Presupuestos mensuales y alertas</div>
+          <div class="task">Multi-cuenta bancaria</div>
+          <div class="task">Importar extractos bancarios (CSV)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STACK -->
+  <section>
+    <div class="section-label">05 — Stack tecnológico</div>
+    <h2>Las herramientas <em>correctas</em></h2>
+    <p class="section-intro">Cada tecnología fue elegida por su integración con el ecosistema Next.js y su capacidad para escalar sin reescrituras.</p>
+
+    <div class="stack-grid">
+      <div class="stack-card">
+        <div class="stack-icon">N↗</div>
+        <div class="stack-name">Next.js 14</div>
+        <div class="stack-role">App Router · SSR · API Routes</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">TS</div>
+        <div class="stack-name">TypeScript</div>
+        <div class="stack-role">Lenguaje base · type safety total</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">Ck</div>
+        <div class="stack-name">Clerk</div>
+        <div class="stack-role">Auth · Google OAuth · roles</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">TW</div>
+        <div class="stack-name">Tailwind CSS</div>
+        <div class="stack-role">Estilos · design system</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">Tg</div>
+        <div class="stack-name">Telegraf.js</div>
+        <div class="stack-role">Bot Telegram · webhooks · NLP</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">Pr</div>
+        <div class="stack-name">Prisma ORM</div>
+        <div class="stack-role">Migraciones · queries typesafe</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">DB</div>
+        <div class="stack-name">AWS Aurora</div>
+        <div class="stack-role">MySQL · multi-tenant · escalable</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">RC</div>
+        <div class="stack-name">Recharts</div>
+        <div class="stack-role">Gráficos · torta · barras · trends</div>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <div class="highlight-title">Decisiones clave de arquitectura</div>
+      <div class="highlight-list">
+        <div class="highlight-item">Prisma ORM sobre queries crudas — migraciones como un comando, schema como documentación viva</div>
+        <div class="highlight-item">Campo source en transactions — analítica de adopción Web vs Telegram para el Admin Panel</div>
+        <div class="highlight-item">Categorías por usuario — cada persona puede tener "Asado", "SUBE" o cualquier cosa sin colisiones</div>
+        <div class="highlight-item">Clerk sobre NextAuth — menor configuración, roles built-in, webhooks para sincronizar con la DB propia</div>
+        <div class="highlight-item">Open Source + SaaS hosted — cualquiera puede auto-hostear; vos ofrecés la versión cloud lista para usar</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-brand">Flow<em>Finance</em></div>
+    <div class="footer-author">
+      Desarrollado por Alan Emanuel Stefanov<br>
+      Impulsando la transparencia financiera a través del código abierto.
+    </div>
+  </footer>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: flowfinance-mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-flowfinance_dev_password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-flowfinance}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Web Application (Next.js)
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: flowfinance-web
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-mysql://root:flowfinance_dev_password@mysql:3306/flowfinance}
+      NODE_ENV: production
+    networks:
+      - flowfinance-network
+
+  # Telegram Bot
+  bot:
+    build:
+      context: ./bot
+      dockerfile: Dockerfile
+    container_name: flowfinance-bot
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-mysql://root:flowfinance_dev_password@mysql:3306/flowfinance}
+      NODE_ENV: production
+    networks:
+      - flowfinance-network
+
+volumes:
+  mysql_data:
+
+networks:
+  flowfinance-network:
+    driver: bridge
