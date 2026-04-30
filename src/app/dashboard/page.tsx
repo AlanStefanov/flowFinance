@@ -12,7 +12,7 @@ export default async function DashboardPage() {
     redirect("/sign-in");
   }
 
-  const [transactions, categories] = await Promise.all([
+  const [transactions, categories, cardStatement] = await Promise.all([
     prisma.transaction.findMany({
       where: { userId },
       orderBy: { date: "desc" },
@@ -21,6 +21,10 @@ export default async function DashboardPage() {
     prisma.category.findMany({
       where: { userId },
       orderBy: { name: "asc" },
+    }),
+    prisma.creditCardStatement.findFirst({
+      where: { userId },
+      orderBy: { statementDate: "desc" },
     }),
   ]);
 
@@ -114,7 +118,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-[#161918] border border-white/10 rounded-lg p-6">
           <div className="text-[#7a8480] text-sm mb-1">Balance Total</div>
           <div className={`text-2xl font-light ${balance >= 0 ? "text-[#4ef07c]" : "text-[#f07a4e]"}`}>
@@ -133,6 +137,17 @@ export default async function DashboardPage() {
             -${totalExpenses.toLocaleString("es-AR", { minimumFractionDigits: 2 })}
           </div>
         </div>
+        <div className="bg-[#161918] border border-white/10 rounded-lg p-6">
+          <div className="text-[#7a8480] text-sm mb-1">💳 Resumen Tarjeta</div>
+          <div className="text-2xl font-light text-[#f07a4e]">
+            ${cardStatement ? Number(cardStatement.balance).toLocaleString("es-AR", { minimumFractionDigits: 2 }) : "0.00"}
+          </div>
+          {cardStatement && (
+            <div className="text-xs text-[#4a5450] mt-1">
+              Actualizado: {new Date(cardStatement.statementDate).toLocaleDateString("es-AR")}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Charts */}
@@ -147,67 +162,101 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Quick Add Transaction */}
-      <div className="bg-[#161918] border border-white/10 rounded-lg p-6 mb-8">
-        <h2 className="text-lg font-medium mb-4">Agregar Movimiento</h2>
-        <form action="/api/transactions" method="POST" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm text-[#7a8480] mb-1">Tipo</label>
-              <select
-                name="type"
-                required
-                className="w-full bg-[#0d0f0e] border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4ef07c]"
-              >
-                <option value="EXPENSE">Gasto</option>
-                <option value="INCOME">Ingreso</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm text-[#7a8480] mb-1">Monto</label>
-              <input
-                type="number"
-                name="amount"
-                step="0.01"
-                required
-                placeholder="0.00"
-                className="w-full bg-[#0d0f0e] border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4ef07c]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-[#7a8480] mb-1">Categoría</label>
-              <input
-                type="text"
-                name="category"
-                required
-                placeholder="Ej: Supermercado"
-                list="categories"
-                className="w-full bg-[#0d0f0e] border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4ef07c]"
-              />
-              <datalist id="categories">
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.name} />
-                ))}
-              </datalist>
-            </div>
-            <div>
-              <label className="block text-sm text-[#7a8480] mb-1">Descripción</label>
-              <input
-                type="text"
-                name="description"
-                placeholder="Opcional"
-                className="w-full bg-[#0d0f0e] border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4ef07c]"
-              />
-            </div>
-          </div>
-          <button
-            type="submit"
-            className="px-6 py-2 bg-[#4ef07c] text-[#0d0f0e] font-medium rounded-lg hover:bg-[#a8f0bc] transition-colors"
-          >
-            Agregar
-          </button>
-        </form>
-      </div>
+       {/* Quick Add Transaction */}
+       <div className="bg-[#161918] border border-white/10 rounded-lg p-6 mb-8">
+         <h2 className="text-lg font-medium mb-4">Agregar Movimiento</h2>
+         <form action="/api/transactions" method="POST" className="space-y-4">
+           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+             <div>
+               <label className="block text-sm text-[#7a8480] mb-1">Tipo</label>
+               <select
+                 name="type"
+                 required
+                 className="w-full bg-[#0d0f0e] border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4ef07c]"
+               >
+                 <option value="EXPENSE">Gasto</option>
+                 <option value="INCOME">Ingreso</option>
+               </select>
+             </div>
+             <div>
+               <label className="block text-sm text-[#7a8480] mb-1">Monto</label>
+               <input
+                 type="number"
+                 name="amount"
+                 step="0.01"
+                 required
+                 placeholder="0.00"
+                 className="w-full bg-[#0d0f0e] border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4ef07c]"
+               />
+             </div>
+             <div>
+               <label className="block text-sm text-[#7a8480] mb-1">Categoría</label>
+               <input
+                 type="text"
+                 name="category"
+                 required
+                 placeholder="Ej: Supermercado"
+                 list="categories"
+                 className="w-full bg-[#0d0f0e] border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4ef07c]"
+               />
+               <datalist id="categories">
+                 {categories.map((cat) => (
+                   <option key={cat.id} value={cat.name} />
+                 ))}
+               </datalist>
+             </div>
+             <div>
+               <label className="block text-sm text-[#7a8480] mb-1">Descripción</label>
+               <input
+                 type="text"
+                 name="description"
+                 placeholder="Opcional"
+                 className="w-full bg-[#0d0f0e] border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4ef07c]"
+               />
+             </div>
+           </div>
+           <button
+             type="submit"
+             className="px-6 py-2 bg-[#4ef07c] text-[#0d0f0e] font-medium rounded-lg hover:bg-[#a8f0bc] transition-colors"
+           >
+             Agregar
+           </button>
+         </form>
+       </div>
+
+       {/* Update Credit Card Statement */}
+       <div className="bg-[#161918] border border-white/10 rounded-lg p-6 mb-8">
+         <h2 className="text-lg font-medium mb-4">💳 Actualizar Resumen de Tarjeta</h2>
+         <form action="/api/card-statement" method="POST" className="space-y-4">
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <div>
+               <label className="block text-sm text-[#7a8480] mb-1">Saldo Actual</label>
+               <input
+                 type="number"
+                 name="balance"
+                 step="0.01"
+                 required
+                 placeholder="0.00"
+                 className="w-full bg-[#0d0f0e] border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#4ef07c]"
+               />
+             </div>
+             <div className="flex items-end">
+               <button
+                 type="submit"
+                 className="px-6 py-2 bg-[#4ef07c] text-[#0d0f0e] font-medium rounded-lg hover:bg-[#a8f0bc] transition-colors"
+               >
+                 Actualizar
+               </button>
+             </div>
+           </div>
+         </form>
+         {cardStatement && (
+           <p className="text-xs text-[#4a5450] mt-3">
+             Último resumen: ${Number(cardStatement.balance).toLocaleString("es-AR", { minimumFractionDigits: 2 })} 
+             {" "}el {new Date(cardStatement.statementDate).toLocaleDateString("es-AR")}
+           </p>
+         )}
+       </div>
 
       {/* Transactions Table */}
       <div className="bg-[#161918] border border-white/10 rounded-lg overflow-hidden">

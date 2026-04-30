@@ -1,5 +1,6 @@
 import { Telegraf } from "telegraf";
 import { PrismaClient, TransactionType, Source } from "@prisma/client";
+import { Decimal } from "@prisma/client/runtime/library";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -254,11 +255,59 @@ bot.on("text", async (ctx) => {
     return ctx.reply(message, { parse_mode: "Markdown" });
   }
 
+  // Check for credit card statement update
+  const statementMatch = text.match(/(?:resumen|tarjeta)(?:\s+va)?\s*(?:en)?\s*\$?\s*(\d+(?:\.\d{1,2})?)/i);
+  if (statementMatch) {
+    const balance = parseFloat(statementMatch[1]);
+    
+    if (isNaN(balance) || balance < 0) {
+      return ctx.reply("❌ El monto debe ser un número válido mayor o igual a 0.");
+    }
+
+    try {
+      const statement = await prisma.creditCardStatement.create({
+        data: {
+          userId: user.id,
+          balance: balance,
+        },
+      });
+
+      return ctx.reply(
+        `💳 *Resumen de tarjeta actualizado*\n\n` +
+        `*Saldo actual:* $${balance.toLocaleString("es-AR", { minimumFractionDigits: 2 })}\n` +
+        `*Fecha:* ${new Date().toLocaleDateString("es-AR")}`,
+        { parse_mode: "Markdown" }
+      );
+    } catch (error) {
+      console.error("Error saving statement:", error);
+      return ctx.reply("❌ Error al actualizar el resumen. Probá de nuevo.");
+    }
+  }
+
+  // Check for credit card statement query
+  if (text.match(/cuánto\s+(?:debo|es\s+el\s+resumen)|resumen\s+(?:actual|de\s+la\s+tarjeta)/i)) {
+    const latest = await prisma.creditCardStatement.findFirst({
+      where: { userId: user.id },
+      orderBy: { statementDate: "desc" },
+    });
+
+    if (!latest) {
+      return ctx.reply("💳 No tenés ningún resumen registrado. Escribí 'El resumen va en 5000' para actualizarlo.");
+    }
+
+    return ctx.reply(
+      `💳 *Resumen de tarjeta actual*\n\n` +
+      `*Saldo:* $${Number(latest.balance).toLocaleString("es-AR", { minimumFractionDigits: 2 })}\n` +
+      `*Actualizado:* ${latest.statementDate.toLocaleDateString("es-AR")}`,
+      { parse_mode: "Markdown" }
+    );
+  }
+
   // Try to parse as expense/income
   const parsed = parseExpense(text);
   if (!parsed) {
     return ctx.reply(
-      "🤔 No entendí. Probá con: 'Gaste 4500 en el super' o 'Cobré 50000'"
+      "🤔 No entendí. Probá con: 'Gaste 4500 en el super', 'Cobré 50000' o 'El resumen va en 5000'"
     );
   }
 

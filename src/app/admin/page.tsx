@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import SetAdminForm from "./SetAdminForm";
 
 export default async function AdminPage() {
   // Global stats
@@ -10,6 +11,7 @@ export default async function AdminPage() {
     totalExpenses,
     telegramUsers,
     recentTransactions,
+    users,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.transaction.count(),
@@ -28,6 +30,14 @@ export default async function AdminPage() {
       take: 10,
       orderBy: { date: "desc" },
       include: { user: true },
+    }),
+    prisma.user.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        _count: {
+          select: { transactions: true },
+        },
+      },
     }),
   ]);
 
@@ -183,6 +193,76 @@ export default async function AdminPage() {
                     <span className="text-xs font-mono text-[#4a5450]">
                       {tx.source}
                     </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Set Admin Form */}
+      <div className="bg-[#161918] border border-white/10 rounded-lg p-6 mb-8">
+        <h2 className="text-lg font-medium mb-4">Promover a Admin</h2>
+        <SetAdminForm />
+      </div>
+
+      {/* Users List */}
+      <div className="bg-[#161918] border border-white/10 rounded-lg overflow-hidden mb-8">
+        <div className="px-6 py-4 border-b border-white/10">
+          <h2 className="text-lg font-medium">Usuarios Registrados</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-white/[0.05]">
+                <th className="text-left px-6 py-3 text-xs font-mono text-[#4a5450] uppercase tracking-wider">
+                  Email
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-mono text-[#4a5450] uppercase tracking-wider">
+                  Rol
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-mono text-[#4a5450] uppercase tracking-wider">
+                  Telegram
+                </th>
+                <th className="text-right px-6 py-3 text-xs font-mono text-[#4a5450] uppercase tracking-wider">
+                  Transacciones
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-mono text-[#4a5450] uppercase tracking-wider">
+                  Registro
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr
+                  key={user.id}
+                  className="border-b border-white/[0.05] hover:bg-white/[0.02]"
+                >
+                  <td className="px-6 py-4 text-sm">{user.email}</td>
+                  <td className="px-6 py-4 text-sm">
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-mono ${
+                        user.role === "ADMIN"
+                          ? "bg-[rgba(78,184,240,0.1)] text-[#4eb8f0]"
+                          : "bg-[rgba(122,132,128,0.1)] text-[#7a8480]"
+                      }`}
+                    >
+                      {user.role}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-sm">
+                    {user.telegramId ? (
+                      <span className="text-[#4eb8f0] text-xs">✓ Vinculado</span>
+                    ) : (
+                      <span className="text-[#4a5450] text-xs">No</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-right font-mono">
+                    {user._count.transactions}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-[#7a8480]">
+                    {new Date(user.createdAt).toLocaleDateString("es-AR")}
                   </td>
                 </tr>
               ))}
