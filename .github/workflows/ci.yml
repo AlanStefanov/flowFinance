@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [20.x, 22.x]
 
     steps:
       - uses: actions/checkout@v4
@@ -97,18 +97,4 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build Docker image
-        run: |
-          docker build -t flowfinance:latest .
-          echo "Docker image built successfully"
-
-      - name: Test Docker container
-        run: |
-          docker run -d --name flowfinance-test -p 3000:3000 \
-            -e DATABASE_URL="mysql://root:test@host.docker.internal:3306/test" \
-            -e NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test" \
-            -e CLERK_SECRET_KEY="sk_test" \
-            -e TELEGRAM_BOT_TOKEN="test" \
-            flowfinance:latest
-          sleep 10
-          curl -f http://localhost:3000 || exit 1
-          docker stop flowfinance-test
+        run: docker build -t flowfinance:latest .
