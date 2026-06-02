@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import Footer from "@/components/Footer";
+import CookieConsent from "@/components/CookieConsent";
+import PageTracker from "@/components/PageTracker";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -34,7 +37,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
         <body className="min-h-full flex flex-col bg-[#0d0f0e] text-[#e8ebe9]">
-          {children}
+          <div className="flex-1">{children}</div>
+          <Footer />
+          <CookieConsent />
+          <PageTracker />
         </body>
       </html>
     </ClerkProvider>

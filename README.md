@@ -2,228 +2,122 @@
 
 Plataforma personal de finanzas que combina un bot de Telegram para
 carga rápida con un dashboard web para análisis profundo.
-Multi-tenant, open source y deployado en AWS.
 
 ## ✨ Características
 
-- **Bot de Telegram** - Registrá gastos e ingresos en lenguaje natural
-- **Dashboard Web** - Gráficos, tablas y analítica completa
-- **Multi-tenant** - Aislamiento total entre usuarios (AWS Aurora MySQL)
-- **Open Source** - MIT License, contribuciones bienvenidas
-- **SaaS Gratuito** - Versión cloud lista para usar
+- **Bot de Telegram** — Registrá gastos e ingresos en lenguaje natural
+- **Dashboard Web** — Gráficos, tablas, presupuestos y analítica
+- **Multi-moneda** — ARS, USD, EUR, BRL y más
+- **Presupuestos** — Límites mensuales por categoría con barra de progreso
+- **Analytics** — Tracking de páginas y métricas de uso
+- **Multi-tenant** — Aislamiento total entre usuarios
+- **SaaS Gratuito** — Sin planes de pago, siempre libre
 
-## 🏗️ Stack Tecnológico
+## 🏗️ Stack
 
-- **Frontend/Backend:** Next.js 14 (App Router, SSR, API Routes)
-- **Lenguaje:** TypeScript
-- **Autenticación:** Clerk (Google OAuth, JWT, Roles)
-- **Estilos:** Tailwind CSS
-- **ORM:** Prisma (Migraciones, queries typesafe)
-- **Base de Datos:** AWS Aurora MySQL
-- **Bot:** Telegraf.js (Webhooks, NLP)
-- **Gráficos:** Recharts
+Next.js 16 · TypeScript · Clerk · Tailwind CSS · Prisma · MySQL · Telegraf.js · Recharts · Docker
 
 ## 🚀 Quick Start
 
-### Prerrequisitos
-
-- Docker y Docker Compose instalados
-- Cuenta en Clerk (para auth)
-- Token de Telegram Bot (para el bot)
-
-### 🚀 Método Rápido: Docker Compose (Recomendado)
-
-**1. Clonar el repositorio:**
-
-```bash
-git clone https://github.com/tu-usuario/flowfinance.git
-cd flowfinance
-```
-
-**2. Configurar variables de entorno:**
+### Docker Compose (Recomendado)
 
 ```bash
 cp .env.example .env
+# Editar .env con tus credenciales (Clerk, Telegram)
+docker compose up -d
 ```
 
-Editar `.env` con tus credenciales:
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` y `CLERK_SECRET_KEY` desde https://clerk.com
-- `TELEGRAM_BOT_TOKEN` desde @BotFather en Telegram
+Visitá `http://localhost:3000`
 
-**3. Ejecutar el script de instalación:**
+### Desarrollo Manual
 
 ```bash
-chmod +x install.sh
-./install.sh
-```
-
-Este script:
-- Verifica que Docker esté instalado
-- Limpia contenedores anteriores (opcional)
-- Builda y levanta todos los servicios (MySQL + Web + Bot)
-- Configura la base de datos automáticamente
-
-**4. ¡Listo! Visitá:**
-
-```
-http://localhost:3000
-```
-
-### 🔧 Método Manual (Desarrollo)
-
-Si preferís correr sin Docker:
-
-**1. Clonar e instalar:**
-
-```bash
-git clone https://github.com/tu-usuario/flowfinance.git
-cd flowfinance
 npm install
+# Levantar MySQL: docker compose up -d mysql
+npx prisma migrate dev
+npm run dev          # Terminal 1: Web
+cd bot && npm run dev  # Terminal 2: Telegram bot
 ```
 
-**2. Levantar MySQL:**
-
-```bash
-docker run -d \
-  --name flowfinance-mysql \
-  -p 3306:3306 \
-  -e MYSQL_ROOT_PASSWORD=flowfinance_dev_password \
-  -e MYSQL_DATABASE=flowfinance \
-  -v flowfinance-mysql-data:/var/lib/mysql \
-  mysql:8.0
-```
-
-**3. Configurar `.env`** (copiá desde `.env.example` y completá)
-
-**4. Migraciones y build:**
-
-```bash
-npx prisma generate
-npx prisma db push
-```
-
-**5. Ejecutar en desarrollo:**
-
-```bash
-# Terminal 1: Web app
-npm run dev
-
-# Terminal 2: Telegram bot
-cd bot && npx ts-node index.ts
-```
-
-¡Visitá `http://localhost:3000`!
-
-## 📊 Estructura del Proyecto
+## 📁 Estructura
 
 ```
-flowfinance/
-├── src/
-│   ├── app/                    # Next.js App Router
-│   │   ├── api/                # API Routes
-│   │   │   ├── categories/      # Gestión categorías
-│   │   │   ├── export/          # Exportar CSV
-│   │   │   ├── telegram/        # Vinculación
-│   │   │   └── transactions/   # CRUD transacciones
-│   │   ├── admin/              # Panel admin
-│   │   ├── dashboard/          # Dashboard principal
-│   │   ├── onboarding/         # Flujo 3 pasos
-│   │   └── open-source/        # Página comunidad
-│   ├── components/            # Componentes Recharts
-│   └── lib/                  # Utilidades
-├── bot/                      # Bot Telegram
-├── prisma/                   # Schema y migraciones
-├── .github/workflows/         # CI/CD
-├── docker-compose.yml          # Levanta todo
-├── install.sh                 # Script instalación
-└── README.md
+src/
+├── app/
+│   ├── api/           # API Routes (transactions, budgets, categories, analytics, telegram)
+│   ├── admin/         # Panel admin con analytics
+│   ├── dashboard/     # Dashboard + Presupuestos + Categorías + Telegram
+│   ├── onboarding/    # Flujo de 3 pasos
+│   └── open-source/   # Página comunidad
+├── components/        # Footer, CookieConsent, Charts, PageTracker
+└── lib/               # Prisma client, analytics
+bot/                   # Telegram bot (Telegraf.js)
+prisma/                # Schema + migraciones
+deploy/                # Scripts deploy
+  ├── aws/cloudformation/   # Infraestructura AWS
+  └── linux/                # Setup + deploy Linux
 ```
 
 ## 🤖 Comandos del Bot
 
-```
-Gaste 4500 en el super     → Registra un gasto
-Cobré 50000                   → Registra un ingreso
-¿Cuánto gasté este mes?    → Resumen mensual
-¿Cuánto me queda?          → Balance del período
-/start XXXXXX                 → Vincula Telegram
-```
+- `Gaste 4500 en el super` → Registrar gasto
+- `Cobré 50000 sueldo` → Registrar ingreso
+- `Mis gastos este mes` → Resumen mensual
+- `Balance` → Resumen del período
+- `/ultimos [N]` → Últimos movimientos
+- `/eliminar #ID` → Eliminar movimiento
+- `/help` → Todos los comandos
 
 ## 🌐 Deploy
 
-### Vercel (Recomendado para Next.js)
-
-1. Conectá tu repositorio a Vercel
-2. Configurá las variables de entorno en el dashboard
-3. Deploy automático en cada push
-
-### Docker + EC2 (Self-hosted)
+### AWS (CloudFormation)
 
 ```bash
-# Build image
-docker build -t flowfinance .
-
-# Run with env file
-docker run -p 3000:3000 \
-  --env-file .env \
-  flowfinance
+# Ver deploy/aws/cloudformation/template.yaml
+# Crea: VPC, RDS MySQL, ECS Fargate (Web + Bot), ALB
 ```
 
-## 🤝 Cómo Contribuir
+### Linux (Docker)
 
-1. Fork el repositorio
-2. Creá una branch (`git checkout -b feature/nueva-feature`)
-3. Commiteá tus cambios (`git commit -am 'Add some feature'`)
-4. Pusheá a la branch (`git push origin feature/nueva-feature`)
-5. Abrí un Pull Request
+```bash
+bash deploy/linux/setup.sh    # Instala Docker + firewall
+cp .env.example .env          # Configurar variables
+bash deploy/linux/deploy.sh   # Build + start
+```
 
-### Guidelines
+## 🧪 Tests
 
-- Seguí los estándares de código existentes
-- Asegurate de que TypeScript no tire errores (`npm run build`)
-- Actualizá la documentación si es necesario
+```bash
+npm test              # Vitest (API + Prisma)
+node --import tsx --test __tests__/parser.test.ts  # NLP parser
+```
 
 ## 📋 Roadmap
 
-### Fase 1: MVP ✅
-- [x] Setup Next.js + Tailwind + Clerk
-- [x] Conexión MySQL + Prisma
-- [x] CRUD transacciones web
-- [x] Bot Telegram básico
-- [x] Flujo de linking Telegram ↔ Web
-- [x] Dashboard con tabla
+### ✅ Completado
+- CRUD transacciones (Web + Telegram)
+- Dashboard con gráficos (Recharts)
+- Categorías customizables
+- Parser NLP argentino
+- Onboarding 3 pasos
+- Admin panel + analytics
+- Multi-moneda
+- Presupuestos mensuales
+- Cookies consent
+- Footer con firma
+- Deploy scripts (AWS + Linux)
+- CI/CD GitHub Actions
+- Pruebas automatizadas
 
-### Fase 2: Inteligencia ✅
-- [x] Gráficos Recharts
-- [x] Resúmenes mensuales Telegram
-- [x] Categorías customizables
-- [x] Exportar CSV
-- [x] Parser NLP mejorado
-
-### Fase 3: SaaS (En progreso)
-- [x] Landing page profesional
-- [x] Admin panel
-- [x] Onboarding 3 pasos
-- [ ] Deploy AWS con dominio
-- [ ] Docs completas
-- [ ] CI/CD GitHub Actions
-
-### Fase 4: Escala
-- [ ] PWA instalable
-- [ ] Presupuestos mensuales
-- [ ] Multi-cuenta bancaria
-- [ ] Importar extractos bancarios
+### 🔄 En progreso
+- Notificaciones de gastos
+- PWA instalable
+- Importar extractos bancarios
 
 ## 📄 Licencia
 
-MIT License - Mirá el archivo [LICENSE](LICENSE) para más detalles.
-
-## 🙌 Autor
-
-Desarrollado por **Alan Emanuel Stefanov**
-
-Impulsando la transparencia financiera a través del código abierto.
+MIT — [Alan Emanuel Stefanov](https://github.com/anomalyco)
 
 ---
 
-⭐ Si te gusta el proyecto, dale una estrella en GitHub!
+⭐ Si te gusta el proyecto, dale una estrella en GitHub.

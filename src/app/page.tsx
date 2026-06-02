@@ -292,16 +292,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="max-w-6xl mx-auto px-8 py-12 flex items-center justify-between flex-wrap gap-4">
-        <div className="font-serif text-xl font-light text-[#7a8480]">
-          Flow<span className="italic text-[#4ef07c]">Finance</span>
-        </div>
-        <div className="font-mono text-[11px] text-[#4a5450] text-right">
-          Desarrollado por Alan Emanuel Stefanov<br/>
-          Impulsando la transparencia financiera a través del código abierto.
-        </div>
-      </footer>
     </main>
   );
 }

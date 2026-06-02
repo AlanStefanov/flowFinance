@@ -22,7 +22,7 @@ function categorize(description: string, type: string): string {
     if (desc.match(/cine|teatro|netflix|spotify|juego|juegos/))
       return "Entretenimiento";
     if (desc.match(/medic|doctor|farmacia|hospital/)) return "Salud";
-    if (desc.match(/ropa|zapatillas|zapatos|calzado/)) return "Ropa";
+    if (desc.match(/ropa|zapatillas|zapatos|calzado|remera|buzo|jean|pantalon/)) return "Ropa";
     return "Otros";
   }
 
@@ -36,6 +36,13 @@ async function findUserByTelegramId(telegramId: number) {
   });
 }
 
+// Parse argentine amount format (comma as decimal separator)
+function parseAmount(raw: string): number {
+  let cleaned = raw.replace(/\.(\d{3})/g, "$1");
+  cleaned = cleaned.replace(",", ".");
+  return parseFloat(cleaned);
+}
+
 // Parse expense/income from natural language
 function parseExpense(text: string): {
   amount: number;
@@ -47,10 +54,13 @@ function parseExpense(text: string): {
 
   // Expense patterns
   const expensePatterns = [
-    /(?:gaste|gasto)\s+(\d+(?:\.\d{1,2})?)\s*(?:en|por)?\s*(.+)?/i,
-    /(\d+(?:\.\d{1,2})?)\s*(?:en|por)\s*(.+)/i,
-    /(?:pagué|pago)\s+(\d+(?:\.\d{1,2})?)\s*(?:por)?\s*(.+)?/i,
-    /(?:compré|compro)\s+(.+?)\s+por\s+(\d+(?:\.\d{1,2})?)/i,
+    /(?:gaste|gasto|gasté)\s+(\d+(?:[.,]\d{1,2})?)\s*(?:en|por)?\s*(.+)?/i,
+    /(\d+(?:[.,]\d{1,2})?)\s*(?:en|por)\s*(.+)/i,
+    /(?:pagué|pague|pago|aboné|abone)\s+(\d+(?:[.,]\d{1,2})?)\s*(?:por)?\s*(.+)?/i,
+    /(?:compré|compro|compre)\s+(.+?)\s+por\s+(\d+(?:[.,]\d{1,2})?)/i,
+    /(?:transferí|transferi|transferencia)\s+(\d+(?:[.,]\d{1,2})?)\s*(?:a|por)?\s*(.+)?/i,
+    /(?:debit[oó]|debito)\s+(\d+(?:[.,]\d{1,2})?)\s*(?:de|en|por)?\s*(.+)?/i,
+    /(?:consum[ií]|consumo)\s+(\d+(?:[.,]\d{1,2})?)\s*(?:en|por)?\s*(.+)?/i,
   ];
 
   for (const pattern of expensePatterns) {
@@ -59,13 +69,15 @@ function parseExpense(text: string): {
       let amount: number;
       let desc: string;
 
-      if (pattern.source.includes("compré")) {
-        amount = parseFloat(match[2]);
+      if (pattern.source.includes("compré") || pattern.source.includes("compre")) {
+        amount = parseAmount(match[2]);
         desc = match[1]?.trim() || "";
       } else {
-        amount = parseFloat(match[1]);
+        amount = parseAmount(match[1]);
         desc = match[2]?.trim() || "";
       }
+
+      if (isNaN(amount) || amount <= 0) continue;
 
       const category = categorize(desc, "EXPENSE");
       return { amount, category, type: "EXPENSE" as TransactionType, description: desc };
@@ -74,15 +86,18 @@ function parseExpense(text: string): {
 
   // Income patterns
   const incomePatterns = [
-    /(?:cobré|cobro|recibí|recibo)\s+(\d+(?:\.\d{1,2})?)\s*(?:por)?\s*(.+)?/i,
-    /(?:me\s+)?(?:pagaron|pago)\s+(\d+(?:\.\d{1,2})?)\s*(?:por)?\s*(.+)?/i,
+    /(?:cobré|cobro|cobre|recibí|recibi|recibo)\s+(\d+(?:\.\d{1,2})?)\s*(?:por)?\s*(.+)?/i,
+    /(?:me\s+)?(?:pagaron|pago|pagaron)\s+(\d+(?:\.\d{1,2})?)\s*(?:por)?\s*(.+)?/i,
     /(?:sueldo|salario)\s*(?:de)?\s*(\d+(?:\.\d{1,2})?)/i,
+    /(?:honorarios|factur[oó]|facturo)\s+(\d+(?:\.\d{1,2})?)\s*(?:por)?\s*(.+)?/i,
+    /(?:ingres[oó]|ingreso)\s+(\d+(?:\.\d{1,2})?)\s*(?:por)?\s*(.+)?/i,
   ];
 
   for (const pattern of incomePatterns) {
     const match = text.match(pattern);
     if (match) {
-      const amount = parseFloat(match[1]);
+      const amount = parseAmount(match[1]);
+      if (isNaN(amount) || amount <= 0) continue;
       const desc = match[2]?.trim() || "Sueldo";
       const category = categorize(desc, "INCOME");
       return { amount, category, type: "INCOME" as TransactionType, description: desc };
@@ -129,7 +144,14 @@ bot.start(async (ctx) => {
     });
 
     return ctx.reply(
-      "✅ ¡Vinculación exitosa! Ahora podés registrar gastos e ingresos."
+      "✅ ¡Vinculación exitosa! Ahora podés registrar gastos e ingresos.\n\n" +
+      "Comandos disponibles:\n" +
+      "• Gaste 4500 en el super\n" +
+      "• Cobré 50000 sueldo\n" +
+      "• Mis gastos este mes\n" +
+      "• Balance\n" +
+      "• /ultimos — últimos movimientos\n" +
+      "• /help — todos los comandos"
     );
   }
 
@@ -138,13 +160,114 @@ bot.start(async (ctx) => {
     const existingUser = await findUserByTelegramId(telegramId);
     if (existingUser) {
       return ctx.reply(
-        "✅ Ya estás vinculado a FlowFinance. Escribí un gasto o ingreso!"
+        "✅ Ya estás vinculado a FlowFinance. Escribí un gasto o ingreso!\n\n" +
+        "• /help — ver todos los comandos"
       );
     }
   }
 
   return ctx.reply(
     "👋 ¡Hola! Para vincular tu cuenta, envía desde el dashboard: /start CÓDIGO"
+  );
+});
+
+// /help command
+bot.help(async (ctx) => {
+  const telegramId = ctx.from?.id;
+  if (!telegramId) return ctx.reply("❌ No se pudo identificar tu usuario.");
+  const user = await findUserByTelegramId(telegramId);
+  if (!user) {
+    return ctx.reply("❌ No estás vinculado. Usá /start CÓDIGO para vincular tu cuenta.");
+  }
+
+  const message =
+    "🤖 *FlowFinance - Comandos*\n\n" +
+    "*Registrar transacciones:*\n" +
+    "• `Gaste 4500 en el super` — registrar gasto\n" +
+    "• `Cobré 50000 sueldo` — registrar ingreso\n" +
+    "• `Pague 1200 de uber` — registrar gasto\n" +
+    "• `Compre remera por 3500` — registrar gasto\n\n" +
+    "*Consultas:*\n" +
+    "• `Mis gastos este mes` — total de gastos × categoría\n" +
+    "• `Balance` — ingresos vs gastos + presupuesto diario\n" +
+    "• `/ultimos [N]` — últimos N movimientos (default 5)\n\n" +
+    "*Tarjeta de crédito:*\n" +
+    "• `El resumen va en 5000` — actualizar saldo\n" +
+    "• `Cuanto debo?` — consultar resumen actual\n\n" +
+    "*Gestión:*\n" +
+    "• `/eliminar <ID>` — eliminar un movimiento\n" +
+    "• `/help` — este mensaje\n\n" +
+    "🌐 *Dashboard web:* gestioná categorías y gráficos en flowfinance.app";
+
+  return ctx.reply(message, { parse_mode: "Markdown" });
+});
+
+// /ultimos command - view recent transactions
+bot.command("ultimos", async (ctx) => {
+  const telegramId = ctx.from?.id;
+  if (!telegramId) return;
+  const user = await findUserByTelegramId(telegramId);
+  if (!user) return ctx.reply("❌ No estás vinculado. Usá /start CÓDIGO.");
+
+  const text = ctx.message.text;
+  const parts = text.split(/\s+/);
+  const n = parseInt(parts[1] || "5");
+  const count = Math.min(Math.max(n, 1), 20);
+
+  const transactions = await prisma.transaction.findMany({
+    where: { userId: user.id },
+    orderBy: { date: "desc" },
+    take: count,
+  });
+
+  if (transactions.length === 0) {
+    return ctx.reply("📭 No hay movimientos registrados.");
+  }
+
+  let message = `📋 *Últimos ${transactions.length} movimientos:*\n\n`;
+  for (const tx of transactions) {
+    const sign = tx.type === "INCOME" ? "+" : "-";
+    const emoji = tx.type === "INCOME" ? "📈" : "📉";
+    const currency = (tx as any).currency || "ARS";
+    message += `${emoji} *${tx.category}* — ${sign}$${Number(tx.amount).toLocaleString("es-AR", { minimumFractionDigits: 2 })} ${currency}\n`;
+    message += `   ${new Date(tx.date).toLocaleDateString("es-AR")} | ${tx.description || "—"} | \`#${tx.id}\`\n`;
+  }
+  message += `\nPara eliminar: /eliminar #ID`;
+
+  return ctx.reply(message, { parse_mode: "Markdown" });
+});
+
+// /eliminar command - delete a transaction by ID
+bot.command("eliminar", async (ctx) => {
+  const telegramId = ctx.from?.id;
+  if (!telegramId) return;
+  const user = await findUserByTelegramId(telegramId);
+  if (!user) return ctx.reply("❌ No estás vinculado. Usá /start CÓDIGO.");
+
+  const text = ctx.message.text;
+  const parts = text.split(/\s+/);
+  const idStr = (parts[1] || "").replace(/^#/, "");
+  if (!idStr || !/^\d+$/.test(idStr)) {
+    return ctx.reply("❌ Usá: /eliminar #ID (ej: /eliminar #42)");
+  }
+
+  const id = BigInt(idStr);
+  const tx = await prisma.transaction.findFirst({
+    where: { id, userId: user.id },
+  });
+
+  if (!tx) {
+    return ctx.reply("❌ Movimiento no encontrado o no te pertenece.");
+  }
+
+  await prisma.transaction.delete({ where: { id } });
+
+  return ctx.reply(
+    `🗑️ *Movimiento eliminado*\n\n` +
+    `*Monto:* $${Number(tx.amount).toLocaleString("es-AR", { minimumFractionDigits: 2 })}\n` +
+    `*Categoría:* ${tx.category}\n` +
+    `*Fecha:* ${new Date(tx.date).toLocaleDateString("es-AR")}`,
+    { parse_mode: "Markdown" }
   );
 });
 
@@ -325,6 +448,7 @@ bot.on("text", async (ctx) => {
         description: parsed.description,
         date: new Date(),
         source: "TELEGRAM" as Source,
+        currency: "ARS",
       },
     });
 

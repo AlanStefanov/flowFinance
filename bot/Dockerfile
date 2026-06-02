@@ -1,18 +1,18 @@
-FROM node:20-alpine AS builder
+FROM node:24-alpine
+WORKDIR /app
 
-WORKDIR /app/
+# Copy local node_modules (already installed)
+COPY node_modules ./node_modules
+COPY package.json ./
 
-COPY package*.json ./
-RUN npm ci;
+# Copy Prisma schema + bot source
+COPY prisma ./prisma
+COPY bot ./bot
 
-COPY . .
-RUN npx tsc;
+# Generate Prisma client
+RUN node node_modules/prisma/build/index.js generate
 
-FROM node:20-alpine
+# Compile bot TypeScript
+RUN node node_modules/typescript/bin/tsc -p bot/tsconfig.json
 
-WORKDIR /app/
-
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-
-CMD ["node", "dist/index.js"]
+CMD ["node", "bot/dist/index.js"]

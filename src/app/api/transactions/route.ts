@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { amount, type, category, description, date, source = "WEB" } = body;
+    const { amount, type, category, description, date, source = "WEB", currency } = body;
 
     if (!amount || !type || !category) {
       return NextResponse.json(
@@ -80,6 +80,7 @@ export async function POST(req: NextRequest) {
         description,
         date: date ? new Date(date) : new Date(),
         source,
+        currency: currency || "ARS",
       },
     });
 

@@ -18,6 +18,7 @@ model User {
   telegramLinks TelegramLink[]
   categories    Category[]
   cardStatements CreditCardStatement[]
+  budgets       Budget[]
 
   @@map("users")
 }
@@ -43,11 +44,37 @@ model Transaction {
   description String?     @db.Text
   date        DateTime    @db.Date
   source      Source
+  currency    String      @default("ARS") @db.VarChar(3)
   createdAt   DateTime    @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("transactions")
+}
+
+model Budget {
+  id        Int      @id @default(autoincrement())
+  userId    String   @map("user_id")
+  name      String   @db.VarChar(100)
+  category  String?  @db.VarChar(100)
+  amount    Decimal  @db.Decimal(12, 2)
+  month     Int
+  year      Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, category, month, year])
+  @@map("budgets")
+}
+
+model PageView {
+  id        BigInt   @id @default(autoincrement())
+  path      String   @db.VarChar(500)
+  userId    String?  @map("user_id")
+  timestamp DateTime @default(now())
+
+  @@map("page_views")
 }
 
 model TelegramLink {
