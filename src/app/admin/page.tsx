@@ -4,6 +4,10 @@ import SetAdminForm from "./SetAdminForm";
 
 export default async function AdminPage() {
   // Global stats
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
   const [
     totalUsers,
     totalTransactions,
@@ -12,6 +16,11 @@ export default async function AdminPage() {
     telegramUsers,
     recentTransactions,
     users,
+    totalPageViews,
+    todayPageViews,
+    topPaths,
+    uniqueUsers,
+    pageViewsByDay,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.transaction.count(),
@@ -38,6 +47,25 @@ export default async function AdminPage() {
           select: { transactions: true },
         },
       },
+    }),
+    prisma.pageView.count(),
+    prisma.pageView.count({
+      where: { timestamp: { gte: todayStart } },
+    }),
+    prisma.pageView.groupBy({
+      by: ["path"],
+      _count: true,
+      orderBy: { _count: { path: "desc" } },
+      take: 10,
+    }),
+    prisma.pageView.groupBy({
+      by: ["userId"],
+      _count: true,
+    }),
+    prisma.pageView.findMany({
+      where: { timestamp: { gte: thirtyDaysAgo } },
+      select: { timestamp: true },
+      orderBy: { timestamp: "asc" },
     }),
   ]);
 
@@ -93,6 +121,63 @@ export default async function AdminPage() {
           <div className="text-[#7a8480] text-sm mb-1">Gastos Totales</div>
           <div className="text-2xl font-light text-[#f07a4e]">
             -${expenseSum.toLocaleString("es-AR", { minimumFractionDigits: 2 })}
+          </div>
+        </div>
+      </div>
+
+      {/* Analytics */}
+      <div className="bg-[#161918] border border-white/10 rounded-lg p-6 mb-8">
+        <h2 className="text-lg font-medium mb-4">📊 Analytics</h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+          <div>
+            <div className="text-[#7a8480] text-sm">Vistas Totales</div>
+            <div className="text-xl font-light">{totalPageViews.toLocaleString()}</div>
+          </div>
+          <div>
+            <div className="text-[#7a8480] text-sm">Vistas Hoy</div>
+            <div className="text-xl font-light">{todayPageViews.toLocaleString()}</div>
+          </div>
+          <div>
+            <div className="text-[#7a8480] text-sm">Usuarios Únicos</div>
+            <div className="text-xl font-light">{uniqueUsers.length.toLocaleString()}</div>
+          </div>
+          <div>
+            <div className="text-[#7a8480] text-sm">Páginas</div>
+            <div className="text-xl font-light">{topPaths.length}</div>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <div className="text-[#7a8480] text-sm mb-2">Páginas más visitadas</div>
+            <div className="space-y-1">
+              {topPaths.map((p) => (
+                <div key={p.path} className="flex justify-between text-sm">
+                  <span className="font-mono text-[#4a5450]">{p.path}</span>
+                  <span className="text-[#4ef07c] font-mono">{p._count.toLocaleString()}</span>
+                </div>
+              ))}
+              {topPaths.length === 0 && (
+                <div className="text-[#4a5450] text-sm">Sin datos aún</div>
+              )}
+            </div>
+          </div>
+          <div>
+            <div className="text-[#7a8480] text-sm mb-2">Vistas últimos 30 días</div>
+            <div className="space-y-1 max-h-48 overflow-y-auto">
+              {(() => {
+                const byDay: Record<string, number> = {};
+                for (const v of pageViewsByDay) {
+                  const day = new Date(v.timestamp).toLocaleDateString("es-AR");
+                  byDay[day] = (byDay[day] || 0) + 1;
+                }
+                return Object.entries(byDay).reverse().slice(0, 30).map(([day, count]) => (
+                  <div key={day} className="flex justify-between text-sm">
+                    <span className="text-[#4a5450]">{day}</span>
+                    <span className="text-[#4eb8f0] font-mono">{count}</span>
+                  </div>
+                ));
+              })()}
+            </div>
           </div>
         </div>
       </div>

@@ -1,7 +1,5 @@
-version: '3.8'
-
 services:
-  # MySQL Database
+  # 1️⃣ MySQL Database
   mysql:
     image: mysql:8.0
     container_name: flowfinance-mysql
@@ -15,10 +13,32 @@ services:
       - mysql_data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
+      interval: 5s
+      timeout: 10s
+      retries: 15
+      start_period: 30s
+    networks:
+      - flowfinance-network
 
-  # Web Application (Next.js)
+  # 2️⃣ Telegram Bot
+  bot:
+    build:
+      context: .
+      dockerfile: bot/Dockerfile
+    container_name: flowfinance-bot
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: mysql://root:flowfinance_dev_password@mysql:3306/flowfinance
+      NODE_ENV: production
+    networks:
+      - flowfinance-network
+
+  # 3️⃣ Web Application (Next.js)
   web:
     build:
       context: .
@@ -33,24 +53,7 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: ${DATABASE_URL:-mysql://root:flowfinance_dev_password@mysql:3306/flowfinance}
-      NODE_ENV: production
-    networks:
-      - flowfinance-network
-
-  # Telegram Bot
-  bot:
-    build:
-      context: ./bot
-      dockerfile: Dockerfile
-    container_name: flowfinance-bot
-    restart: unless-stopped
-    depends_on:
-      - mysql
-    env_file:
-      - .env
-    environment:
-      DATABASE_URL: ${DATABASE_URL:-mysql://root:flowfinance_dev_password@mysql:3306/flowfinance}
+      DATABASE_URL: mysql://root:flowfinance_dev_password@mysql:3306/flowfinance
       NODE_ENV: production
     networks:
       - flowfinance-network
